@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "817470098277",
+    "firebase_url": "https://beercounter-78aae.firebaseio.com",
+    "project_id": "beercounter-78aae",
+    "storage_bucket": "beercounter-78aae.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817470098277:android:8d6231308d85678504af8c",
+        "android_client_info": {
+          "package_name": "app.koller.beer_counter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "817470098277-msjdp4k2cfm3dc2gnp7e957fgobaas2v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.koller.beer_counter",
+            "certificate_hash": "9157a9ddb4a5848a082add674a90b16394f8c733"
+          }
+        },
+        {
+          "client_id": "817470098277-4pohqt32ilq27vo8a9emiukb6fvu90ul.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAatAqsHasjWzwqxHSeMvFpmufMeDjwLWQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "817470098277-4pohqt32ilq27vo8a9emiukb6fvu90ul.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
