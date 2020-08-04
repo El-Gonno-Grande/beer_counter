@@ -1,3 +1,5 @@
+import 'package:latlong/latlong.dart';
+
 /// various model classes to store data in Firebase
 
 class BeerEvent {
@@ -55,7 +57,7 @@ class Beer {
   String getEventId() => eventId;
 
   /// get geo location at which [Beer] was consumed
-  List<double> getLocation() => [lat, lon];
+  LatLng getLocation() => LatLng(lat, lon);
 
   /// get time at which [Beer] was consumed
   int getTime() => timeStamp;

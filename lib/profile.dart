@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:beer_counter/beers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:geolocator/geolocator.dart';
@@ -226,7 +225,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<Null>(
-                      builder: (BuildContext context) => BeerPage()),
+                      builder: (BuildContext context) => BeerPage(
+                            beers:
+                                _beers.where((e) => e.uid == widget.user.uid).toList(),
+                          )),
                 ),
               ),
             ),
