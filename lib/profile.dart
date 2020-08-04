@@ -57,10 +57,52 @@ class _ProfilePageState extends State<ProfilePage> {
     _beersSubscription.cancel();
   }
 
+  Future<String> _askForBeerEventName() async {
+    TextEditingController controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('New Beer Event'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  autofocus: true,
+                  controller: controller,
+                  decoration: InputDecoration(
+                      labelText: 'Event Name'),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+                child: const Text('CANCEL'),
+                onPressed: () {
+                  Navigator.pop(context);
+                }),
+            FlatButton(
+                child: const Text('CREATE'),
+                onPressed: () {
+                  Navigator.pop(context, controller.text);
+                })
+          ],
+        );
+      },
+    );
+  }
+
   void _createBeerEvent() async {
-    // TODO: get Event name with dialog
-    String name = 'Test';
+    String name = await _askForBeerEventName();
+    if (name == null) {
+      return;
+    }
     BeerEvent e = BeerEvent(
+      id: (widget.user.uid + DateTime.now().millisecondsSinceEpoch.toString())
+          .hashCode
+          .toString(),
       name: name,
       participants: [widget.user.uid],
     );
@@ -74,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage> {
     BeerEvent e;
     // TODO: get location
     int lat = 0, lon = 0;
-    int timeStamp = new DateTime.now().millisecondsSinceEpoch;
+    int timeStamp = DateTime.now().millisecondsSinceEpoch;
     // TODO: verify beer
     bool verified = false;
     Beer b = Beer(
