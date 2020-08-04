@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:beer_counter/beers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -94,7 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _createBeerEvent() async {
+  Future<void> _createBeerEvent() async {
     String name = await _askForBeerEventName();
     if (name == null) {
       return;
@@ -104,16 +105,16 @@ class _ProfilePageState extends State<ProfilePage> {
           .hashCode
           .toString(),
       name: name,
-      participants: [widget.user.uid],
+      participants: [], // widget.user.uid
     );
 
     // add event to events in transaction.
-    addItemToListTransaction(e.toJson(), _eventsRef);
+    _addItemToListTransaction(e.toJson(), _eventsRef);
   }
 
-  void _addBeer() async {
+  Future<void> _addBeer() async {
     // TODO: ask for associated event
-    BeerEvent e;
+    String eId;
     Position position = await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     int timeStamp = DateTime.now().millisecondsSinceEpoch;
@@ -121,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
     bool verified = false;
     Beer b = Beer(
       uid: widget.user.uid,
-      event: e,
+      eventId: eId,
       lat: position.latitude,
       lon: position.longitude,
       timeStamp: timeStamp,
@@ -129,10 +130,16 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     // add beer to beers in transaction.
-    addItemToListTransaction(b.toJson(), _beersRef);
+    _addItemToListTransaction(b.toJson(), _beersRef);
   }
 
-  void addItemToListTransaction(item, ref) async {
+  Future<void> _joinBeerEvent(int idx) async {
+    _addItemToListTransaction(
+        widget.user.uid, _eventsRef.child('$idx/participants'));
+  }
+
+  Future<void> _addItemToListTransaction(
+      dynamic item, DatabaseReference ref) async {
     // add beer to beers in transaction.
     final TransactionResult result =
         await ref.runTransaction((MutableData data) async {
@@ -238,9 +245,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             Visibility(
                               child: OutlineButton(
                                   child: Text('Join'),
-                                  onPressed: () => {
-                                        // TODO: implement join
-                                      }),
+                                  onPressed: () => {_joinBeerEvent(idx)}),
                               visible: !_events[idx]
                                   .participants
                                   .contains(widget.user.uid),
