@@ -2,12 +2,12 @@
 
 class BeerEvent {
   String id, name;
-  List<String> participants;
+  List<String> drinkers;
 
   BeerEvent({
     this.id,
     this.name,
-    this.participants,
+    this.drinkers,
   });
 
   /// get unique identifier for the [BeerEvent]
@@ -16,18 +16,23 @@ class BeerEvent {
   /// get [BeerEvent] name
   String getName() => name;
 
-  /// get an array of all Uids of participating users in this [BeerEvent]
-  getParticipants() => participants;
+  /// get an array of all Uids of participating/drinking users in this [BeerEvent]
+  getParticipants() => drinkers;
+
+  @override
+  String toString() {
+    return name;
+  }
 
   BeerEvent.fromJson(Map<dynamic, dynamic> json)
       : id = json['id'],
         name = json['name'],
-        participants = List<String>.from(json['participants'] ?? []);
+        drinkers = List<String>.from(json['drinkers'] ?? []);
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'participants': participants,
+        'drinkers': drinkers,
       };
 }
 

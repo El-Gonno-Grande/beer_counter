@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:beer_counter/beers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_picker/flutter_picker.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'models.dart';
@@ -59,6 +59,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _beersSubscription.cancel();
   }
 
+  /// ask user via a dialog for an event name
   Future<String> _askForBeerEventName() async {
     TextEditingController controller = TextEditingController();
     return showDialog<String>(
@@ -95,6 +96,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// create a new beer event in database
   Future<void> _createBeerEvent() async {
     String name = await _askForBeerEventName();
     if (name == null) {
@@ -105,16 +107,44 @@ class _ProfilePageState extends State<ProfilePage> {
           .hashCode
           .toString(),
       name: name,
-      participants: [], // widget.user.uid
+      drinkers: [], // widget.user.uid
     );
 
     // add event to events in transaction.
     _addItemToListTransaction(e.toJson(), _eventsRef);
   }
 
+  /// displays dialog to select the beer event to be associated to a new beer
+  Future<BeerEvent> _askForBeerEvent() async {
+    // find all events where the user is participating/drinking in
+    // + (option to not add this beer under an event)
+    List<BeerEvent> participatingEvents = [BeerEvent(name: 'No Event')];
+    participatingEvents
+        .addAll(_events.where((e) => e.drinkers.contains(widget.user.uid)));
+    // use Completer to return final selection
+    Completer<BeerEvent> completer = Completer<BeerEvent>();
+    Picker(
+        adapter: PickerDataAdapter<String>(
+          pickerdata: participatingEvents.map((e) => e.getName()).toList(),
+        ),
+        hideHeader: true,
+        title: new Text("Please Pick a Beer Event"),
+        onCancel: () {
+          completer.completeError(null);
+        },
+        onConfirm: (Picker picker, List<int> value) {
+          completer.complete(participatingEvents[value[0]]);
+        }).showDialog(context);
+    return completer.future;
+  }
+
+  /// add a new beer to the database
   Future<void> _addBeer() async {
     // TODO: ask for associated event
-    String eId;
+    BeerEvent event = await _askForBeerEvent();
+    if (event == null) {
+      return;
+    }
     Position position = await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     int timeStamp = DateTime.now().millisecondsSinceEpoch;
@@ -122,7 +152,7 @@ class _ProfilePageState extends State<ProfilePage> {
     bool verified = false;
     Beer b = Beer(
       uid: widget.user.uid,
-      eventId: eId,
+      eventId: event.getId(),
       lat: position.latitude,
       lon: position.longitude,
       timeStamp: timeStamp,
@@ -133,11 +163,14 @@ class _ProfilePageState extends State<ProfilePage> {
     _addItemToListTransaction(b.toJson(), _beersRef);
   }
 
-  Future<void> _joinBeerEvent(int idx) async {
+  /// add user to participants/drinkers list of an event
+  Future<void> _joinBeerEvent(BeerEvent event) async {
+    int idx = _events.indexOf(event);
     _addItemToListTransaction(
-        widget.user.uid, _eventsRef.child('$idx/participants'));
+        widget.user.uid, _eventsRef.child('$idx/drinkers'));
   }
 
+  /// abstract method to append a new item to a list in the database
   Future<void> _addItemToListTransaction(
       dynamic item, DatabaseReference ref) async {
     // add beer to beers in transaction.
@@ -245,9 +278,10 @@ class _ProfilePageState extends State<ProfilePage> {
                             Visibility(
                               child: OutlineButton(
                                   child: Text('Join'),
-                                  onPressed: () => {_joinBeerEvent(idx)}),
+                                  onPressed: () =>
+                                      {_joinBeerEvent(_events[idx])}),
                               visible: !_events[idx]
-                                  .participants
+                                  .drinkers
                                   .contains(widget.user.uid),
                             ),
                           ],
