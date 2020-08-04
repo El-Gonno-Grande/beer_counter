@@ -36,7 +36,8 @@ class BeerEvent {
 class Beer {
   String uid;
   BeerEvent event;
-  int lat, lon, timeStamp;
+  double lat, lon;
+  int timeStamp;
   bool verified;
 
   Beer({
@@ -52,7 +53,7 @@ class Beer {
   BeerEvent getEvent() => event;
 
   /// get geo location at which [Beer] was consumed
-  List<int> getLocation() => [lat, lon];
+  List<double> getLocation() => [lat, lon];
 
   /// get time at which [Beer] was consumed
   int getTime() => timeStamp;

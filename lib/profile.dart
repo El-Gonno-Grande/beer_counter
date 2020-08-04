@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 
 import 'models.dart';
 
@@ -71,8 +72,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 TextField(
                   autofocus: true,
                   controller: controller,
-                  decoration: InputDecoration(
-                      labelText: 'Event Name'),
+                  decoration: InputDecoration(labelText: 'Event Name'),
                 ),
               ],
             ),
@@ -114,16 +114,16 @@ class _ProfilePageState extends State<ProfilePage> {
   void _addBeer() async {
     // TODO: ask for associated event
     BeerEvent e;
-    // TODO: get location
-    int lat = 0, lon = 0;
+    Position position = await Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     int timeStamp = DateTime.now().millisecondsSinceEpoch;
     // TODO: verify beer
     bool verified = false;
     Beer b = Beer(
       uid: widget.user.uid,
       event: e,
-      lat: lat,
-      lon: lon,
+      lat: position.latitude,
+      lon: position.longitude,
       timeStamp: timeStamp,
       verified: verified,
     );
