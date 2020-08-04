@@ -4,6 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'models.dart';
 
+void openBeerMap(context, beers) =>
+    Navigator.of(context).push(MaterialPageRoute<Null>(
+        builder: (BuildContext context) => BeerMapPage(beers: beers)));
+
 class BeerMapPage extends StatefulWidget {
   final List<Beer> beers;
 

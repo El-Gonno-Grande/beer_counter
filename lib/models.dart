@@ -74,11 +74,11 @@ class Beer {
         verified = json['verified'];
 
   Map<String, dynamic> toJson() => {
-    'uid': uid,
-    'eventId': eventId,
-    'lat': lat,
-    'lon': lon,
-    'timeStamp': timeStamp,
-    'verified': verified,
-  };
+        'uid': uid,
+        'eventId': eventId,
+        'lat': lat,
+        'lon': lon,
+        'timeStamp': timeStamp,
+        'verified': verified,
+      };
 }
