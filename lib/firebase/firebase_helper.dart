@@ -9,10 +9,12 @@ import '../models.dart';
 /// wraps most Firebase interactions into one class
 class FirebaseHelper {
   /// database stuff
-  DatabaseReference _eventsRef, _beersRef;
-  StreamSubscription<Event> _eventsSubscription, _beersSubscription;
+  DatabaseReference _eventsRef, _beersRef, _usersRef;
+  StreamSubscription<Event> _eventsSubscription,
+      _beersSubscription,
+      _usersSubscription;
 
-  final FirebaseCallback callback;
+  final FirebaseHelperCallback callback;
 
   FirebaseHelper({this.callback});
 
@@ -21,28 +23,25 @@ class FirebaseHelper {
     // init and read event
     _eventsRef = FirebaseDatabase.instance.reference().child('events');
     _eventsRef.keepSynced(true);
-    _eventsSubscription = _eventsRef.onValue.listen((Event e) {
-      List<BeerEvent> events = e.snapshot.value == null
-          ? []
-          : List<BeerEvent>.from(
-              e.snapshot.value.map((b) => BeerEvent.fromJson(b)));
-      callback.eventsChanged(events);
-    });
+    _eventsSubscription = _eventsRef.onValue.listen((Event e) =>
+        callback.eventsChanged(BeerEvent.fromJsonToList(e.snapshot.value)));
     // init and read beers
     _beersRef = FirebaseDatabase.instance.reference().child('beers');
     _beersRef.keepSynced(true);
-    _beersSubscription = _beersRef.onValue.listen((Event e) {
-      List<Beer> beers = e.snapshot.value == null
-          ? []
-          : List<Beer>.from(e.snapshot.value.map((b) => Beer.fromJson(b)));
-      callback.beersChanged(beers);
-    });
+    _beersSubscription = _beersRef.onValue.listen((Event e) =>
+        callback.beersChanged(Beer.fromJsonToList(e.snapshot.value)));
+    // init and read users
+    _usersRef = FirebaseDatabase.instance.reference().child('users');
+    _usersRef.keepSynced(true);
+    _usersSubscription = _usersRef.onValue.listen((Event e) =>
+        callback.usersChanged(User.fromJsonToList(e.snapshot.value)));
   }
 
   /// should be called in dispose()
   void dispose() {
     _eventsSubscription.cancel();
     _beersSubscription.cancel();
+    _usersSubscription.cancel();
   }
 
   /// create a new beer event in database
@@ -69,7 +68,7 @@ class FirebaseHelper {
   }
 
   /// abstract method to append a new item to a list in the database
-  Future<void> _addItemToListTransaction(
+  static Future<void> _addItemToListTransaction(
       dynamic item, DatabaseReference ref) async {
     // add beer to beers in transaction.
     final TransactionResult result =
@@ -90,7 +89,7 @@ class FirebaseHelper {
   }
 
   /// abstract method to append a new item to a list in the database
-  Future<void> _removeItemFromListTransaction(
+  static Future<void> _removeItemFromListTransaction(
       dynamic item, DatabaseReference ref) async {
     final TransactionResult result =
         await ref.runTransaction((MutableData data) async {
@@ -110,12 +109,15 @@ class FirebaseHelper {
   }
 }
 
-abstract class FirebaseCallback {
+abstract class FirebaseHelperCallback {
   /// called when events list was changed
   void eventsChanged(List<BeerEvent> events);
 
   /// called when beers list was changed
   void beersChanged(List<Beer> beers);
+
+  /// called when users list was changed
+  void usersChanged(List<User> users);
 }
 
 class FirebaseSignInHelper {
@@ -137,6 +139,17 @@ class FirebaseSignInHelper {
     final FirebaseUser user =
         (await _auth.signInWithCredential(credential)).user;
     print("signed in " + user.displayName);
+    // store user in users list
+    DatabaseReference usersRef =
+        FirebaseDatabase.instance.reference().child('users');
+    DataSnapshot data = await usersRef.once();
+    List<User> users = User.fromJsonToList(data.value);
+    if (users.where((e) => e.uid == user.uid).length == 0) {
+      // create new user
+      FirebaseHelper._addItemToListTransaction(
+          User(uid: user.uid, name: user.displayName).toJson(), usersRef);
+    }
+
     return user;
   }
 }

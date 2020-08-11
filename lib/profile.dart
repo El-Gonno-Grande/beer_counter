@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:beer_counter/beers.dart';
+import 'package:beer_counter/events.dart';
 import 'package:beer_counter/firebase/firebase_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,8 @@ class ProfilePage extends StatefulWidget {
   State<StatefulWidget> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> implements FirebaseCallback {
+class _ProfilePageState extends State<ProfilePage>
+    implements FirebaseHelperCallback {
   List<BeerEvent> events = [];
   List<Beer> beers = [];
 
@@ -38,6 +40,9 @@ class _ProfilePageState extends State<ProfilePage> implements FirebaseCallback {
 
   @override
   void beersChanged(List<Beer> beers) => setState(() => {this.beers = beers});
+
+  @override
+  void usersChanged(List<User> users) {}
 
   @override
   void initState() {
@@ -115,7 +120,7 @@ class _ProfilePageState extends State<ProfilePage> implements FirebaseCallback {
     Completer<BeerEvent> completer = Completer<BeerEvent>();
     Picker(
         adapter: PickerDataAdapter<String>(
-          pickerdata: participatingEvents.map((e) => e.getName()).toList(),
+          pickerdata: participatingEvents.map((e) => e.name).toList(),
         ),
         hideHeader: true,
         title: new Text("Please Pick a Beer Event"),
@@ -140,7 +145,7 @@ class _ProfilePageState extends State<ProfilePage> implements FirebaseCallback {
     bool verified = false;
     Beer beer = Beer(
       uid: widget.user.uid,
-      eventId: event.getId(),
+      eventId: event.id,
       lat: position.latitude,
       lon: position.longitude,
       timeStamp: timeStamp,
@@ -176,7 +181,7 @@ class _ProfilePageState extends State<ProfilePage> implements FirebaseCallback {
               ),
               child: InkWell(
                 child: Text(
-                  'Total Beer Count: ${beers.where((b) => b.uid == widget.user.uid).length}',
+                  'My Beer Count: ${beers.where((b) => b.uid == widget.user.uid).length}',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -220,28 +225,31 @@ class _ProfilePageState extends State<ProfilePage> implements FirebaseCallback {
                   itemCount: events.length,
                   itemBuilder: (BuildContext context, int idx) {
                     return Container(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8, bottom: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(events[idx].getName(),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                            Visibility(
-                              child: OutlineButton(
-                                child: Text('Join'),
-                                onPressed: () =>
-                                    helper.joinBeerEvent(widget.user.uid, idx),
+                      child: InkWell(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 8, bottom: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(events[idx].name,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                              Visibility(
+                                child: OutlineButton(
+                                  child: Text('Join'),
+                                  onPressed: () => helper.joinBeerEvent(
+                                      widget.user.uid, idx),
+                                ),
+                                visible: !events[idx]
+                                    .drinkers
+                                    .contains(widget.user.uid),
                               ),
-                              visible: !events[idx]
-                                  .drinkers
-                                  .contains(widget.user.uid),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
+                        onTap: () => openEventPage(context, events[idx]),
                       ),
                     );
                   }),

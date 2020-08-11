@@ -18,7 +18,8 @@ class BeersPage extends StatefulWidget {
   State<StatefulWidget> createState() => _BeersPageState();
 }
 
-class _BeersPageState extends State<BeersPage> implements FirebaseCallback {
+class _BeersPageState extends State<BeersPage>
+    implements FirebaseHelperCallback {
   List<Beer> beers = [];
   List<BeerEvent> events = [];
 
@@ -48,12 +49,13 @@ class _BeersPageState extends State<BeersPage> implements FirebaseCallback {
   void beersChanged(List<Beer> beers) => setState(() =>
       {this.beers = beers.where((e) => e.uid == widget.user.uid).toList()});
 
+  @override
+  void usersChanged(List<User> users) {}
+
   String _getBeerEventName(int idx) {
     try {
-      String eventId = beers[idx].getEventId();
-      return events
-          .firstWhere((element) => element.getId() == eventId)
-          .getName();
+      String eventId = beers[idx].eventId;
+      return events.firstWhere((e) => e.id == eventId).name;
     } catch (_) {
       return 'No Event';
     }

@@ -12,15 +12,6 @@ class BeerEvent {
     this.drinkers,
   });
 
-  /// get unique identifier for the [BeerEvent]
-  String getId() => id;
-
-  /// get [BeerEvent] name
-  String getName() => name;
-
-  /// get an array of all Uids of participating/drinking users in this [BeerEvent]
-  getParticipants() => drinkers;
-
   @override
   String toString() {
     return name;
@@ -36,6 +27,9 @@ class BeerEvent {
         'name': name,
         'drinkers': drinkers,
       };
+
+  static List<BeerEvent> fromJsonToList(dynamic json) =>
+      json == null ? [] : List<BeerEvent>.from(json.map((b) => BeerEvent.fromJson(b)));
 }
 
 class Beer {
@@ -53,17 +47,8 @@ class Beer {
     this.verified = false,
   });
 
-  /// get [BeerEvent].id where [Beer] was consumed
-  String getEventId() => eventId;
-
   /// get geo location at which [Beer] was consumed
   LatLng getLocation() => LatLng(lat, lon);
-
-  /// get time at which [Beer] was consumed
-  int getTime() => timeStamp;
-
-  /// true is [Beer] was verified
-  bool isVerified() => verified;
 
   Beer.fromJson(Map<dynamic, dynamic> json)
       : uid = json['uid'],
@@ -81,4 +66,25 @@ class Beer {
         'timeStamp': timeStamp,
         'verified': verified,
       };
+
+  static List<Beer> fromJsonToList(dynamic json) =>
+      json == null ? [] : List<Beer>.from(json.map((b) => Beer.fromJson(b)));
+}
+
+class User {
+  String uid, name;
+
+  User({this.uid, this.name});
+
+  User.fromJson(Map<dynamic, dynamic> json)
+      : uid = json['uid'],
+        name = json['name'];
+
+  Map<String, dynamic> toJson() => {
+        'uid': uid,
+        'name': name,
+      };
+
+  static List<User> fromJsonToList(dynamic json) =>
+      json == null ? [] : List<User>.from(json.map((b) => User.fromJson(b)));
 }
