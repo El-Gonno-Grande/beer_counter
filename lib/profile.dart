@@ -261,6 +261,8 @@ class _ProfilePageState extends State<ProfilePage>
                     child: Text('Create Event'),
                     onPressed: _createBeerEvent,
                     textColor: theme.accentColor,
+                    color: theme.accentColor,
+                    highlightedBorderColor: theme.accentColor,
                   ),
                 ),
               ],
@@ -288,6 +290,8 @@ class _ProfilePageState extends State<ProfilePage>
                                   onPressed: () =>
                                       _askForBeerEventPassword(idx),
                                   textColor: theme.accentColor,
+                                  color: theme.accentColor,
+                                  highlightedBorderColor: theme.accentColor,
                                 ),
                                 visible: !events[idx]
                                     .drinkers
