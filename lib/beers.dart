@@ -95,7 +95,7 @@ class _BeersPageState extends State<BeersPage>
                           )),
                       Text(_getBeerEventName(idx)),
                       IconButton(
-                        icon: Icon(Icons.map),
+                        icon: Icon(Icons.location_on),
                         onPressed: () => openBeerMap(context, [beers[idx]]),
                       )
                     ],

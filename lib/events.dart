@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'beermap.dart';
 import 'firebase/firebase_helper.dart';
 import 'models.dart';
 
@@ -50,11 +51,51 @@ class _EventPageState extends State<EventPage>
   @override
   void usersChanged(List<User> users) => setState(() => {this.users = users});
 
+  Future<void> _showPasswordDialog() async => showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Password'),
+            content: Text(
+                'The password to join ${widget.event.name} is: ${widget.event.id}'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          );
+        },
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.event.name),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.map),
+              onPressed: () => openBeerMap(context, beers),
+            ),
+            PopupMenuButton<String>(
+              onSelected: (String s) {
+                switch (s) {
+                  case 'pwd':
+                    _showPasswordDialog();
+                    break;
+                  default:
+                    break;
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem<String>(
+                  value: 'pwd',
+                  child: Text('Show Password'),
+                )
+              ],
+            ),
+          ],
         ),
         body: Column(
           children: <Widget>[

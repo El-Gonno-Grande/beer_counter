@@ -25,6 +25,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage>
     implements FirebaseHelperCallback {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   List<BeerEvent> events = [];
   List<Beer> beers = [];
 
@@ -104,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage>
           .hashCode
           .toString(),
       name: name,
-      drinkers: [], // widget.user.uid
+      drinkers: [widget.user.uid],
     );
     helper.addBeerEvent(event);
   }
@@ -154,9 +156,58 @@ class _ProfilePageState extends State<ProfilePage>
     helper.addBeer(beer);
   }
 
+  Future<void> _askForBeerEventPassword(int idx) async {
+    TextEditingController controller = TextEditingController();
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Enter Password'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                    'Please ask a someone for the password to join ${events[idx].name}.'),
+                TextField(
+                  autofocus: true,
+                  controller: controller,
+                  decoration: InputDecoration(labelText: 'Password'),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+                child: const Text('CANCEL'),
+                onPressed: () {
+                  Navigator.pop(context);
+                }),
+            FlatButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  SnackBar snackBar;
+                  if (controller.text == events[idx].id) {
+                    // password correct
+                    helper.joinBeerEvent(widget.user.uid, idx);
+                    snackBar = SnackBar(content: Text('Password correct!'));
+                  } else {
+                    snackBar = SnackBar(content: Text('Password incorrect!'));
+                  }
+                  _scaffoldKey.currentState..showSnackBar(snackBar);
+                })
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           title: Row(
             children: <Widget>[
@@ -182,17 +233,14 @@ class _ProfilePageState extends State<ProfilePage>
               child: InkWell(
                 child: Text(
                   'My Beer Count: ${beers.where((b) => b.uid == widget.user.uid).length}',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: theme.textTheme.headline4,
                 ),
                 onTap: () => openBeersPage(context, widget.user),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8),
-              child: OutlineButton(
+              child: RaisedButton(
                 child: Text('Add Beer'),
                 onPressed: _addBeer,
               ),
@@ -204,10 +252,7 @@ class _ProfilePageState extends State<ProfilePage>
                   padding: const EdgeInsets.all(16),
                   child: Text(
                     'Events',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: theme.textTheme.headline4,
                   ),
                 ),
                 Padding(
@@ -215,6 +260,7 @@ class _ProfilePageState extends State<ProfilePage>
                   child: OutlineButton(
                     child: Text('Create Event'),
                     onPressed: _createBeerEvent,
+                    textColor: theme.accentColor,
                   ),
                 ),
               ],
@@ -227,20 +273,21 @@ class _ProfilePageState extends State<ProfilePage>
                     return Container(
                       child: InkWell(
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 8, bottom: 8),
+                          padding: const EdgeInsets.only(
+                              left: 8, top: 8, bottom: 8, right: 8),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Text(events[idx].name,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  )),
+                              Text(
+                                events[idx].name,
+                                style: theme.textTheme.subtitle1,
+                              ),
                               Visibility(
                                 child: OutlineButton(
                                   child: Text('Join'),
-                                  onPressed: () => helper.joinBeerEvent(
-                                      widget.user.uid, idx),
+                                  onPressed: () =>
+                                      _askForBeerEventPassword(idx),
+                                  textColor: theme.accentColor,
                                 ),
                                 visible: !events[idx]
                                     .drinkers

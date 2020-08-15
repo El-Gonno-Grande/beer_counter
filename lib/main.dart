@@ -13,7 +13,13 @@ class BeerCounter extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: Colors.grey[900],
+        accentColor: Colors.amberAccent,
+        buttonTheme: ButtonThemeData(
+          buttonColor: Colors.amberAccent,
+          textTheme: ButtonTextTheme.primary,
+        ),
+        brightness: Brightness.dark,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: SignInPage(
