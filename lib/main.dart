@@ -37,6 +37,7 @@ class SignInPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(this.title),
@@ -47,6 +48,9 @@ class SignInPage extends StatelessWidget {
           children: <Widget>[
             OutlineButton(
               child: Text('Sign In With Google'),
+              textColor: theme.accentColor,
+              color: theme.accentColor,
+              highlightedBorderColor: theme.accentColor,
               onPressed: () => {
                 // sign in user and open profile page
                 helper

@@ -29,6 +29,11 @@ class _EventPageState extends State<EventPage>
     helper = FirebaseHelper(callback: this);
   }
 
+  void _sortDrinkers() {
+    widget.event.drinkers
+        .sort((d1, d2) => _getBeerCount(d1) - _getBeerCount(d2));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -45,8 +50,12 @@ class _EventPageState extends State<EventPage>
   void eventsChanged(List<BeerEvent> events) {}
 
   @override
-  void beersChanged(List<Beer> beers) => setState(() =>
-      {this.beers = beers.where((e) => e.eventId == widget.event.id).toList()});
+  void beersChanged(List<Beer> beers) {
+    _sortDrinkers();
+    setState(() => {
+          this.beers = beers.where((e) => e.eventId == widget.event.id).toList()
+        });
+  }
 
   @override
   void usersChanged(List<User> users) => setState(() => {this.users = users});
@@ -68,8 +77,16 @@ class _EventPageState extends State<EventPage>
         },
       );
 
+  String _getUserName(uid) {
+    List<User> _user = users.where((e) => e.uid == uid).toList();
+    return _user.isNotEmpty ? _user.first.name : '';
+  }
+
+  int _getBeerCount(uid) => beers.where((e) => e.uid == uid).length;
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.event.name),
@@ -109,10 +126,7 @@ class _EventPageState extends State<EventPage>
               child: InkWell(
                 child: Text(
                   'Total Beer Count: ${beers.length}',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: theme.textTheme.headline4,
                 ),
                 onTap: () => {},
               ),
@@ -129,17 +143,18 @@ class _EventPageState extends State<EventPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Text(users.firstWhere((e) => e.uid == uid).name,
-                                style: TextStyle(fontSize: 16)),
                             Text(
-                                beers
-                                    .where((e) => e.uid == uid)
-                                    .length
-                                    .toString(),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                )),
+                              _getUserName(uid),
+                              style: theme.textTheme.subtitle1,
+                            ),
+                            Text(
+                              _getBeerCount(uid).toString(),
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: theme.accentColor,
+                              ),
+                            ),
                           ],
                         ),
                       ),

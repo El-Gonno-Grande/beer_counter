@@ -272,6 +272,8 @@ class _ProfilePageState extends State<ProfilePage>
                   padding: const EdgeInsets.only(left: 16, right: 16),
                   itemCount: events.length,
                   itemBuilder: (BuildContext context, int idx) {
+                    bool isDrinker =
+                        events[idx].drinkers.contains(widget.user.uid);
                     return Container(
                       child: InkWell(
                         child: Padding(
@@ -284,18 +286,33 @@ class _ProfilePageState extends State<ProfilePage>
                                 events[idx].name,
                                 style: theme.textTheme.subtitle1,
                               ),
-                              Visibility(
-                                child: OutlineButton(
-                                  child: Text('Join'),
-                                  onPressed: () =>
-                                      _askForBeerEventPassword(idx),
-                                  textColor: theme.accentColor,
-                                  color: theme.accentColor,
-                                  highlightedBorderColor: theme.accentColor,
+                              OutlineButton(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Visibility(
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 8.0),
+                                        child: Text('Join'),
+                                      ),
+                                      visible: !isDrinker,
+                                    ),
+                                    Icon(isDrinker
+                                        ? Icons.group
+                                        : Icons.person_add)
+                                  ],
                                 ),
-                                visible: !events[idx]
-                                    .drinkers
-                                    .contains(widget.user.uid),
+                                onPressed: () {
+                                  if (!isDrinker) {
+                                    _askForBeerEventPassword(idx);
+                                  }
+                                },
+                                textColor: isDrinker
+                                    ? theme.accentColor
+                                    : theme.textTheme.bodyText2.color,
+                                color: theme.accentColor,
+                                highlightedBorderColor: theme.accentColor,
                               ),
                             ],
                           ),
