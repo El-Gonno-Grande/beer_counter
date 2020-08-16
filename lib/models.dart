@@ -28,8 +28,15 @@ class BeerEvent {
         'drinkers': drinkers,
       };
 
-  static List<BeerEvent> fromJsonToList(dynamic json) =>
-      json == null ? [] : List<BeerEvent>.from(json.map((b) => BeerEvent.fromJson(b)));
+  static List<BeerEvent> fromJsonToList(dynamic json) => json == null
+      ? []
+      : List<BeerEvent>.from(json.map((b) => BeerEvent.fromJson(b)));
+
+  @override
+  bool operator ==(other) => other is BeerEvent && other.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
 }
 
 class Beer {
@@ -69,6 +76,13 @@ class Beer {
 
   static List<Beer> fromJsonToList(dynamic json) =>
       json == null ? [] : List<Beer>.from(json.map((b) => Beer.fromJson(b)));
+
+  @override
+  bool operator ==(other) =>
+      other is Beer && other.uid == uid && other.timeStamp == timeStamp;
+
+  @override
+  int get hashCode => (uid.hashCode + timeStamp).hashCode;
 }
 
 class User {
@@ -87,4 +101,10 @@ class User {
 
   static List<User> fromJsonToList(dynamic json) =>
       json == null ? [] : List<User>.from(json.map((b) => User.fromJson(b)));
+
+  @override
+  bool operator ==(other) => other is User && other.uid == uid;
+
+  @override
+  int get hashCode => uid.hashCode;
 }

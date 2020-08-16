@@ -100,7 +100,7 @@ class _BeersPageState extends State<BeersPage>
                       )
                     ],
                   ),
-                  onLongPress: () => {helper.removeBeer(beers[idx])},
+                  onLongPress: () => helper.removeBeer(beers[idx]),
                 ),
               ),
             );

@@ -58,8 +58,21 @@ class FirebaseHelper {
 
   /// remove a beer from the database
   Future<void> removeBeer(Beer beer) async {
-    // TODO: fix _removeItemFromListTransaction
-    // await _removeItemFromListTransaction(beer.toJson(), _beersRef);
+    final TransactionResult result =
+    await _beersRef.runTransaction((MutableData data) async {
+      data.value = data.value != null ? List.from(data.value) : [];
+      data.value.removeWhere((e) => beer == Beer.fromJson(e));
+      return data;
+    });
+
+    if (result.committed) {
+      print('Transaction committed.');
+    } else {
+      print('Transaction not committed.');
+      if (result.error != null) {
+        print(result.error.message);
+      }
+    }
   }
 
   /// add user to participants/drinkers list of an event
