@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:latlong/latlong.dart';
 
 import 'models.dart';
 
@@ -21,8 +22,15 @@ class _BeerMapState extends State<BeerMapPage> {
   @override
   Widget build(BuildContext context) {
     // center map on latest beer
-    Beer latestBeer =
-        widget.beers.reduce((val, e) => e.timeStamp > val.timeStamp ? e : val);
+    LatLng mapCenter;
+    if (widget.beers.isEmpty) {
+      // no beer in list => center map on Munich
+      mapCenter = LatLng(48.1351, 11.5820);
+    } else {
+      mapCenter = widget.beers
+          .reduce((val, e) => e.timeStamp > val.timeStamp ? e : val)
+          .getLocation();
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text('BeerMap'),
@@ -31,7 +39,7 @@ class _BeerMapState extends State<BeerMapPage> {
         options: MapOptions(
           minZoom: 1.0,
           maxZoom: 18.0,
-          center: latestBeer.getLocation(),
+          center: mapCenter,
           zoom: 13.0,
         ),
         layers: [
