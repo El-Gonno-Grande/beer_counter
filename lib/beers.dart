@@ -2,6 +2,7 @@ import 'package:beer_counter/beermap.dart';
 import 'package:beer_counter/firebase/firebase_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'models.dart';
 
@@ -61,9 +62,8 @@ class _BeersPageState extends State<BeersPage>
     }
   }
 
-  String _beerTimeStampToDate(int idx) =>
-      DateTime.fromMillisecondsSinceEpoch(beers[idx].timeStamp * 1000)
-          .toString();
+  String _beerTimeStampToDate(int idx) => DateFormat('yyyy-MM-dd hh:mm')
+      .format(DateTime.fromMillisecondsSinceEpoch(beers[idx].timeStamp));
 
   @override
   Widget build(BuildContext context) {
@@ -78,13 +78,13 @@ class _BeersPageState extends State<BeersPage>
         ],
       ),
       body: ListView.builder(
-          padding: const EdgeInsets.only(left: 16, right: 16),
           itemCount: beers.length,
           itemBuilder: (BuildContext context, int idx) {
             return Container(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 8),
-                child: InkWell(
+              child: InkWell(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 24, top: 8, right: 24, bottom: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
@@ -100,8 +100,8 @@ class _BeersPageState extends State<BeersPage>
                       )
                     ],
                   ),
-                  onLongPress: () => helper.removeBeer(beers[idx]),
                 ),
+                onLongPress: () => helper.removeBeer(beers[idx]),
               ),
             );
           }),
