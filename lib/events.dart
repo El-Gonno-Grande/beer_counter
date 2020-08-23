@@ -87,6 +87,11 @@ class _EventPageState extends State<EventPage>
         },
       );
 
+  String _getPhotoUrl(uid) {
+    List<User> _user = users.where((e) => e.uid == uid).toList();
+    return _user.isNotEmpty ? _user.first.photoUrl : '';
+  }
+
   String _getUserName(uid) {
     List<User> _user = users.where((e) => e.uid == uid).toList();
     return _user.isNotEmpty ? _user.first.name : '';
@@ -215,13 +220,25 @@ class _EventPageState extends State<EventPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Text(
-                              _getUserName(uid),
-                              style: theme.textTheme.headline6,
+                            Row(
+                              children: <Widget>[
+                                Container(
+                                  child: CircleAvatar(
+                                    backgroundImage:
+                                    NetworkImage(_getPhotoUrl(uid)),
+                                  ),
+                                  margin: EdgeInsets.only(right: 16.0),
+                                ),
+                                Text(
+                                  _getUserName(uid),
+                                  style: theme.textTheme.headline6,
+                                ),
+                              ],
                             ),
                             Text(
-                              _getBeerCount(uid).toString(),
-                              style: theme.textTheme.headline6.apply(color: theme.accentColor),
+                              '${_getBeerCount(uid).toString()} Beers',
+                              style: theme.textTheme.headline6
+                                  .apply(color: theme.accentColor),
                             ),
                           ],
                         ),

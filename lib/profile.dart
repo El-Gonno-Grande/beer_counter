@@ -202,7 +202,8 @@ class _ProfilePageState extends State<ProfilePage>
                   padding: const EdgeInsets.all(16),
                   child: Text(
                     'Events',
-                    style: theme.textTheme.headline6.apply(color: theme.accentColor),
+                    style: theme.textTheme.headline6
+                        .apply(color: theme.accentColor),
                   ),
                 ),
                 Padding(
@@ -225,16 +226,18 @@ class _ProfilePageState extends State<ProfilePage>
                       child: InkWell(
                         child: Padding(
                           padding: const EdgeInsets.only(
-                              left: 24, top: 12, right: 24, bottom: 12),
+                              left: 16, top: 8, right: 16, bottom: 8),
                           child: Row(
                             children: <Widget>[
                               Container(
-                                child: Icon(Icons.group),
-                                margin: EdgeInsets.only(right: 8.0),
+                                child: CircleAvatar(
+                                  child: Icon(Icons.group),
+                                ),
+                                margin: EdgeInsets.only(right: 16.0),
                               ),
                               Text(
                                 events[idx].name,
-                                style: theme.textTheme.headline5,
+                                style: theme.textTheme.headline6,
                               )
                             ],
                           ),

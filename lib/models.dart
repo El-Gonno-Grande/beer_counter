@@ -4,12 +4,12 @@ import 'package:latlong/latlong.dart';
 
 class BeerEvent {
   String id, name;
-  List<String> drinkers;
+  List<String> drinkers = [];
 
   BeerEvent({
     this.id,
-    this.name,
-    this.drinkers,
+    this.name = '',
+    this.drinkers = const [],
   });
 
   @override
@@ -86,17 +86,19 @@ class Beer {
 }
 
 class User {
-  String uid, name;
+  String uid, name = '', photoUrl = '';
 
-  User({this.uid, this.name});
+  User({this.uid, this.name, this.photoUrl});
 
   User.fromJson(Map<dynamic, dynamic> json)
       : uid = json['uid'],
-        name = json['name'];
+        name = json['name'],
+        photoUrl = json['photoUrl'];
 
   Map<String, dynamic> toJson() => {
         'uid': uid,
         'name': name,
+        'photoUrl': photoUrl,
       };
 
   static List<User> fromJsonToList(dynamic json) =>

@@ -59,7 +59,7 @@ class FirebaseHelper {
   /// remove a beer from the database
   Future<void> removeBeer(Beer beer) async {
     final TransactionResult result =
-    await _beersRef.runTransaction((MutableData data) async {
+        await _beersRef.runTransaction((MutableData data) async {
       data.value = data.value != null ? List.from(data.value) : [];
       data.value.removeWhere((e) => beer == Beer.fromJson(e));
       return data;
@@ -160,7 +160,12 @@ class FirebaseSignInHelper {
     if (users.where((e) => e.uid == user.uid).length == 0) {
       // create new user
       FirebaseHelper._addItemToListTransaction(
-          User(uid: user.uid, name: user.displayName).toJson(), usersRef);
+          User(
+            uid: user.uid,
+            name: user.displayName,
+            photoUrl: user.photoUrl,
+          ).toJson(),
+          usersRef);
     }
 
     return user;
