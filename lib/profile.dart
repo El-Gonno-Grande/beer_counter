@@ -142,11 +142,13 @@ class _ProfilePageState extends State<ProfilePage>
 
   Future<void> _addBeer() async {
     BeerEvent event = await _askForBeerEvent();
+    print(event);
     if (event == null || event.id == null) {
       return;
     }
     Position position = await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    print(position);
     int timeStamp = DateTime.now().millisecondsSinceEpoch;
     // TODO: verify beer
     bool verified = false;
