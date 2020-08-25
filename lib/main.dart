@@ -35,8 +35,16 @@ class SignInPage extends StatelessWidget {
 
   SignInPage({Key key, this.title}) : super(key: key);
 
+  Future<void> _checkIfSignedIn(context) async {
+    FirebaseUser user = await helper.isSignedIn();
+    if (user != null) {
+      openProfilePage(context, user);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    _checkIfSignedIn(context);
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
@@ -55,7 +63,7 @@ class SignInPage extends StatelessWidget {
                 // sign in user and open profile page
                 helper
                     .handleSignIn()
-                    .then((FirebaseUser user) => openProfilePage(context, user))
+                    .then((user) => openProfilePage(context, user))
                     .catchError((e) => print(e))
               },
             )
