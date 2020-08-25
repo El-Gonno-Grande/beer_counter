@@ -138,19 +138,22 @@ class FirebaseSignInHelper {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // TODO: silent sign in
+  Future<FirebaseUser> isSignedIn() async => _auth.currentUser();
+
   Future<FirebaseUser> handleSignIn() async {
-    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+    FirebaseUser user = await _auth.currentUser();
+    if (user == null) {
+      final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
-    final AuthCredential credential = GoogleAuthProvider.getCredential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
+      final AuthCredential credential = GoogleAuthProvider.getCredential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      user = (await _auth.signInWithCredential(credential)).user;
+    }
 
-    final FirebaseUser user =
-        (await _auth.signInWithCredential(credential)).user;
     print("signed in " + user.displayName);
     // store user in users list
     DatabaseReference usersRef =
