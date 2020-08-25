@@ -37,8 +37,8 @@ class _EventPageState extends State<EventPage>
     helper = FirebaseHelper(callback: this);
   }
 
-  void _sortDrinkers() =>
-      event.drinkers.sort((d1, d2) => _getBeerCount(d1) - _getBeerCount(d2));
+  void _sortDrinkers() => event.drinkers
+      .sort((d1, d2) => _getBeers(d1).length - _getBeers(d2).length);
 
   @override
   void initState() {
@@ -97,7 +97,7 @@ class _EventPageState extends State<EventPage>
     return _user.isNotEmpty ? _user.first.name : '';
   }
 
-  int _getBeerCount(uid) => beers.where((e) => e.uid == uid).length;
+  List<Beer> _getBeers(uid) => beers.where((e) => e.uid == uid).toList();
 
   Future<void> _askForBeerEventPassword() async {
     int idx = events.indexOf(event);
@@ -214,6 +214,7 @@ class _EventPageState extends State<EventPage>
                   itemCount: event.drinkers.length,
                   itemBuilder: (BuildContext context, int idx) {
                     String uid = event.drinkers[idx];
+                    List<Beer> beers = _getBeers(uid);
                     return Container(
                       child: Padding(
                         padding: const EdgeInsets.only(top: 12, bottom: 12),
@@ -225,7 +226,7 @@ class _EventPageState extends State<EventPage>
                                 Container(
                                   child: CircleAvatar(
                                     backgroundImage:
-                                    NetworkImage(_getPhotoUrl(uid)),
+                                        NetworkImage(_getPhotoUrl(uid)),
                                   ),
                                   margin: EdgeInsets.only(right: 16.0),
                                 ),
@@ -235,10 +236,13 @@ class _EventPageState extends State<EventPage>
                                 ),
                               ],
                             ),
-                            Text(
-                              '${_getBeerCount(uid).toString()} Beers',
-                              style: theme.textTheme.headline6
-                                  .apply(color: theme.accentColor),
+                            InkWell(
+                              child: Text(
+                                '${beers.length} Beers',
+                                style: theme.textTheme.headline6
+                                    .apply(color: theme.accentColor),
+                              ),
+                              onTap: () => openBeerMap(context, beers),
                             ),
                           ],
                         ),

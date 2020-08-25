@@ -54,13 +54,7 @@ class _BeerMapState extends State<BeerMapPage> {
                       anchorPos: AnchorPos.exactly(Anchor(40.0, 0.0)),
                       point: e.getLocation(),
                       builder: (ctx) => Container(
-                        child:
-                            /*SvgPicture.asset(
-                          'assets/beer_pin.svg',
-                          height: 432.0, // 50.0
-                          width: 432.0, // 50.0
-                        ),*/
-                            Image.asset('assets/beer_pin.png'),
+                        child: Image.asset('assets/beer_pin.png'),
                       ),
                     ))
                 .toList(),

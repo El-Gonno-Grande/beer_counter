@@ -5,7 +5,6 @@ import 'package:beer_counter/events.dart';
 import 'package:beer_counter/firebase/firebase_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_picker/flutter_picker.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'models.dart';
@@ -61,20 +60,13 @@ class _ProfilePageState extends State<ProfilePage>
     TextEditingController controller = TextEditingController();
     return showDialog<String>(
       context: context,
-      barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('New Beer Event'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                TextField(
-                  autofocus: true,
-                  controller: controller,
-                  decoration: InputDecoration(labelText: 'Event Name'),
-                ),
-              ],
-            ),
+          content: TextField(
+            autofocus: true,
+            controller: controller,
+            decoration: InputDecoration(labelText: 'Event Name'),
           ),
           actions: <Widget>[
             FlatButton(
@@ -113,11 +105,12 @@ class _ProfilePageState extends State<ProfilePage>
   Future<BeerEvent> _askForBeerEvent() async {
     // find all events where the user is participating/drinking in
     // + (option to not add this beer under an event)
-    List<BeerEvent> participatingEvents = [BeerEvent(name: 'No Event')];
+    BeerEvent event = BeerEvent(name: 'No Event');
+    List<BeerEvent> participatingEvents = [event];
     participatingEvents
         .addAll(events.where((e) => e.drinkers.contains(widget.user.uid)));
     // use Completer to return final selection
-    Completer<BeerEvent> completer = Completer<BeerEvent>();
+    /*Completer<BeerEvent> completer = Completer<BeerEvent>();
     Picker(
         adapter: PickerDataAdapter<String>(
           pickerdata: participatingEvents.map((e) => e.name).toList(),
@@ -129,13 +122,27 @@ class _ProfilePageState extends State<ProfilePage>
         },
         onConfirm: (Picker picker, List<int> value) {
           completer.complete(participatingEvents[value[0]]);
-        }).showDialog(context);
-    return completer.future;
+        }).showDialog(context);*/
+    final theme = Theme.of(context);
+    return showDialog<BeerEvent>(
+        context: context,
+        builder: (BuildContext context) => SimpleDialog(
+              title: const Text('Pick a Beer Event'),
+              children: participatingEvents
+                  .map((e) => SimpleDialogOption(
+                        onPressed: () => Navigator.pop(context, e),
+                        child: Text(
+                          e.name,
+                          style: theme.textTheme.bodyText1,
+                        ),
+                      ))
+                  .toList(),
+            ));
   }
 
   Future<void> _addBeer() async {
     BeerEvent event = await _askForBeerEvent();
-    if (event.id == null) {
+    if (event == null || event.id == null) {
       return;
     }
     Position position = await Geolocator()
@@ -158,20 +165,21 @@ class _ProfilePageState extends State<ProfilePage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-        appBar: AppBar(
-          title: Row(
-            children: <Widget>[
-              CircleAvatar(
-                backgroundImage: NetworkImage(widget.user.photoUrl),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child: Text(widget.user.displayName),
-              ),
-            ],
-          ),
+      appBar: AppBar(
+        title: Row(
+          children: <Widget>[
+            CircleAvatar(
+              backgroundImage: NetworkImage(widget.user.photoUrl),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: Text(widget.user.displayName),
+            ),
+          ],
         ),
-        body: Column(
+      ),
+      body: SingleChildScrollView(
+        child: Column(
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.only(
@@ -218,37 +226,36 @@ class _ProfilePageState extends State<ProfilePage>
                 ),
               ],
             ),
-            Flexible(
-              child: ListView.builder(
-                  itemCount: events.length,
-                  itemBuilder: (BuildContext context, int idx) {
-                    return Container(
-                      child: InkWell(
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              left: 16, top: 8, right: 16, bottom: 8),
-                          child: Row(
-                            children: <Widget>[
-                              Container(
-                                child: CircleAvatar(
-                                  child: Icon(Icons.group),
+            Column(
+              children: events
+                  .map((e) => Container(
+                        child: InkWell(
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16, top: 8, right: 16, bottom: 8),
+                            child: Row(
+                              children: <Widget>[
+                                Container(
+                                  child: CircleAvatar(
+                                    child: Icon(Icons.group),
+                                  ),
+                                  margin: EdgeInsets.only(right: 16.0),
                                 ),
-                                margin: EdgeInsets.only(right: 16.0),
-                              ),
-                              Text(
-                                events[idx].name,
-                                style: theme.textTheme.headline6,
-                              )
-                            ],
+                                Text(
+                                  e.name,
+                                  style: theme.textTheme.headline6,
+                                )
+                              ],
+                            ),
                           ),
+                          onTap: () => openEventPage(context, widget.user, e),
                         ),
-                        onTap: () =>
-                            openEventPage(context, widget.user, events[idx]),
-                      ),
-                    );
-                  }),
+                      ))
+                  .toList(),
             ),
           ],
-        ));
+        ),
+      ),
+    );
   }
 }
