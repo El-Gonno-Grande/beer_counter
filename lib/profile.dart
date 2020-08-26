@@ -291,8 +291,10 @@ class _ProfilePageState extends State<ProfilePage>
       floatingActionButton: FloatingActionButton(
         onPressed: _addBeer,
         child: SvgPicture.asset(
-          'assets/beer.svg',
+          'assets/add_beer.svg',
           color: Colors.black54,
+          width: 28,
+          height: 28,
         ),
         backgroundColor: theme.accentColor,
       ),
