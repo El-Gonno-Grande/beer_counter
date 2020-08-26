@@ -87,18 +87,21 @@ class Beer {
 
 class User {
   String uid, name = '', photoUrl = '';
+  int beerGoal;
 
-  User({this.uid, this.name, this.photoUrl});
+  User({this.uid, this.name, this.photoUrl, this.beerGoal});
 
   User.fromJson(Map<dynamic, dynamic> json)
       : uid = json['uid'],
         name = json['name'],
-        photoUrl = json['photoUrl'];
+        photoUrl = json['photoUrl'],
+        beerGoal = json['beerGoal'];
 
   Map<String, dynamic> toJson() => {
         'uid': uid,
         'name': name,
         'photoUrl': photoUrl,
+        'beerGoal': beerGoal,
       };
 
   static List<User> fromJsonToList(dynamic json) =>

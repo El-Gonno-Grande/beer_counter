@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:beer_counter/beers.dart';
 import 'package:beer_counter/events.dart';
 import 'package:beer_counter/firebase/firebase_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 
 import 'models.dart';
 
@@ -26,6 +29,7 @@ class _ProfilePageState extends State<ProfilePage>
     implements FirebaseHelperCallback {
   List<BeerEvent> events = [];
   List<Beer> beers = [];
+  List<User> users = [];
 
   FirebaseHelper helper;
 
@@ -35,13 +39,13 @@ class _ProfilePageState extends State<ProfilePage>
 
   @override
   void eventsChanged(List<BeerEvent> events) =>
-      setState(() => {this.events = events});
+      setState(() => this.events = events);
 
   @override
-  void beersChanged(List<Beer> beers) => setState(() => {this.beers = beers});
+  void beersChanged(List<Beer> beers) => setState(() => this.beers = beers);
 
   @override
-  void usersChanged(List<User> users) {}
+  void usersChanged(List<User> users) => setState(() => this.users = users);
 
   @override
   void initState() {
@@ -62,7 +66,7 @@ class _ProfilePageState extends State<ProfilePage>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('New Beer Event'),
+          title: Text('Create Beer Event'),
           content: TextField(
             autofocus: true,
             controller: controller,
@@ -109,20 +113,7 @@ class _ProfilePageState extends State<ProfilePage>
     List<BeerEvent> participatingEvents = [event];
     participatingEvents
         .addAll(events.where((e) => e.drinkers.contains(widget.user.uid)));
-    // use Completer to return final selection
-    /*Completer<BeerEvent> completer = Completer<BeerEvent>();
-    Picker(
-        adapter: PickerDataAdapter<String>(
-          pickerdata: participatingEvents.map((e) => e.name).toList(),
-        ),
-        hideHeader: true,
-        title: new Text("Please Pick a Beer Event"),
-        onCancel: () {
-          completer.completeError(BeerEvent());
-        },
-        onConfirm: (Picker picker, List<int> value) {
-          completer.complete(participatingEvents[value[0]]);
-        }).showDialog(context);*/
+
     final theme = Theme.of(context);
     return showDialog<BeerEvent>(
         context: context,
@@ -163,19 +154,58 @@ class _ProfilePageState extends State<ProfilePage>
     helper.addBeer(beer);
   }
 
+  int _getBeerCount(uid) => beers.where((b) => b.uid == uid).length;
+
+  int _getBeerGoal(uid) => users
+      .firstWhere((element) => element.uid == uid, orElse: () => User(beerGoal: 1))
+      .beerGoal;
+
+  double _getDailyBeerPercentage() =>
+      _getBeerCount(widget.user.uid).toDouble() /
+      _getBeerGoal(widget.user.uid).toDouble();
+
+  List<Widget> _generateEventsWidgets(theme, List<BeerEvent> events) => events
+      .map((e) => Container(
+            child: InkWell(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 16, top: 8, right: 16, bottom: 8),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      child: CircleAvatar(
+                        child: Icon(Icons.group),
+                        backgroundColor: Colors.black38,
+                      ),
+                      margin: EdgeInsets.only(right: 16.0),
+                    ),
+                    Text(
+                      e.name,
+                      style: theme.textTheme.headline6,
+                    )
+                  ],
+                ),
+              ),
+              onTap: () => openEventPage(context, widget.user, e),
+            ),
+          ))
+      .toList();
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
             CircleAvatar(
               backgroundImage: NetworkImage(widget.user.photoUrl),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: Text(widget.user.displayName),
+              child: InkWell(
+                onTap: () {
+                  /* TODO: logout */
+                },
+              ),
             ),
           ],
         ),
@@ -183,27 +213,42 @@ class _ProfilePageState extends State<ProfilePage>
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 8,
-                top: 16,
-                right: 8,
-                bottom: 8,
-              ),
-              child: InkWell(
-                child: Text(
-                  'Beer Count: ${beers.where((b) => b.uid == widget.user.uid).length}',
-                  style: theme.textTheme.headline3,
+            InkWell(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: CircularPercentIndicator(
+                  radius: 120.0,
+                  lineWidth: 10.0,
+                  animation: true,
+                  circularStrokeCap: CircularStrokeCap.round,
+                  progressColor: theme.accentColor..withAlpha(255),
+                  backgroundColor: _getDailyBeerPercentage() >= 1.0
+                      ? theme
+                          .dividerColor /* TODO: What to do when goal achieved? */
+                      : theme.dividerColor,
+                  percent: ((_getDailyBeerPercentage() * 100) % 100) / 100,
+                  center: Text(
+                    _getBeerCount(widget.user.uid).toString(),
+                    style: theme.textTheme.headline4
+                        .apply(color: theme.accentColor),
+                  ),
+                  footer: RichText(
+                    text: TextSpan(
+                      children: [
+                        WidgetSpan(
+                          child: SvgPicture.asset('assets/beer.svg',
+                              color: Colors.white60),
+                        ),
+                        TextSpan(
+                            text: ' Beer Count',
+                            style: theme.textTheme.headline6
+                                .apply(color: Colors.white60)),
+                      ],
+                    ),
+                  ),
                 ),
-                onTap: () => openBeersPage(context, widget.user),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: RaisedButton(
-                child: Text('Add Beer'),
-                onPressed: _addBeer,
-              ),
+              onTap: () => openBeersPage(context, widget.user),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -211,7 +256,7 @@ class _ProfilePageState extends State<ProfilePage>
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'Events',
+                    'My Events',
                     style: theme.textTheme.headline6
                         .apply(color: theme.accentColor),
                   ),
@@ -219,7 +264,19 @@ class _ProfilePageState extends State<ProfilePage>
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: OutlineButton(
-                    child: Text('Create Event'),
+                    child: RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                              text: 'Create Event ',
+                              style: theme.textTheme.button
+                                  .apply(color: theme.accentColor)),
+                          WidgetSpan(
+                            child: Icon(Icons.add, size: 16),
+                          ),
+                        ],
+                      ),
+                    ),
                     onPressed: _createBeerEvent,
                     textColor: theme.accentColor,
                     color: theme.accentColor,
@@ -228,35 +285,16 @@ class _ProfilePageState extends State<ProfilePage>
                 ),
               ],
             ),
-            Column(
-              children: events
-                  .map((e) => Container(
-                        child: InkWell(
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 16, top: 8, right: 16, bottom: 8),
-                            child: Row(
-                              children: <Widget>[
-                                Container(
-                                  child: CircleAvatar(
-                                    child: Icon(Icons.group),
-                                  ),
-                                  margin: EdgeInsets.only(right: 16.0),
-                                ),
-                                Text(
-                                  e.name,
-                                  style: theme.textTheme.headline6,
-                                )
-                              ],
-                            ),
-                          ),
-                          onTap: () => openEventPage(context, widget.user, e),
-                        ),
-                      ))
-                  .toList(),
-            ),
-          ],
+          ]..addAll(_generateEventsWidgets(theme, events)),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addBeer,
+        child: SvgPicture.asset(
+          'assets/beer.svg',
+          color: Colors.black54,
+        ),
+        backgroundColor: theme.accentColor,
       ),
     );
   }
